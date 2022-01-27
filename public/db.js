@@ -1,39 +1,37 @@
 let db;
 
-const request = indexedDB.open("budget", 1);
-
-request.onerror = function (event) {
-  console.log("There was an error: " + event.target.errorCode);
-};
+const request = indexedDB.open("budget_tracker", 1);
 
 request.onupgradeneeded = function (event) {
   const db = event.target.result;
-  db.createObjectStore("pending", { autoIncrement: true });
+  db.createObjectStore("new_entry", { autoIncrement: true });
 };
 
 request.onsuccess = function (event) {
   db = event.target.result;
 
   if (navigator.onLine) {
-    checkDatabase();
+    uploadEntry();
   }
 };
 
-function saveRecord(record) {
-  const transaction = db.transaction(["pending"], "readwrite");
-  const store = transaction.objectStore("pending");
+request.onerror = function (event) {
+  console.log(event.target.errorCode);
+};
 
-  store.add(record);
+function saveRecord(record) {
+  const transaction = db.transaction(["new_entry"], "readwrite");
+  const entryObjectStore = transaction.objectStore("new_entry");
+  entryObjectStore.add(record);
 }
 
-function checkDatabase() {
-  const transaction = db.transaction(["pending"], "readwrite");
-  const store = transaction.objectStore("pending");
-  const getAll = store.getAll();
-
+function uploadEntry() {
+  const transaction = db.transaction(["new_entry"], "readwrite");
+  const entryObjectStore = transaction.objectStore("new_entry");
+  const getAll = entryObjectStore.getAll();
   getAll.onsuccess = function () {
     if (getAll.result.length > 0) {
-      fetch("/api/transaction/bulk", {
+      fetch("./api/transaction", {
         method: "POST",
         body: JSON.stringify(getAll.result),
         headers: {
@@ -42,14 +40,24 @@ function checkDatabase() {
         },
       })
         .then((response) => response.json())
-        .then(() => {
-          const transaction = db.transaction(["pending"], "readwrite");
-          const store = transaction.objectStore("pending");
+        .then((serverResponse) => {
+          if (serverResponse.message) {
+            throw new Error(serverResponse);
+          }
 
-          store.clear();
+          const transaction = db.transaction(["new_entry"], "readwrite");
+
+          const entryObjectStore = transaction.objectStore("new_entry");
+
+          entryObjectStore.clear();
+
+          alert("All saved entries have been submitted!");
+        })
+        .catch((err) => {
+          console.log(err);
         });
     }
   };
 }
 
-window.addEventListener("online", checkDatabase);
+window.addEventListener("online", uploadEntry);
