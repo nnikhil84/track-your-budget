@@ -1,0 +1,28 @@
+{
+  "name": "track-your-budget",
+  "version": "1.0.0",
+  "description": "Start project",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nnikhil84/track-your-budget.git"
+  },
+  "author": "Nikhil Nikhil",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nnikhil84/track-your-budget/issues"
+  },
+  "homepage": "https://github.com/nnikhil84/track-your-budget#readme",
+  "dependencies": {
+    "compression": "^1.7.4",
+    "express": "^4.17.2",
+    "lite-server": "^2.6.1",
+    "mongoose": "^6.1.8",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {}
+}
